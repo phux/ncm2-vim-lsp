@@ -99,6 +99,14 @@ func! s:on_completion_result(server_name, ctx, data) abort
         let ud = {}
         let ud['lspitem'] = lspitems[i]
         let ud['vim_lsp'] = {'server_name': a:server_name}
+
+        " remove type information from parameter snippets
+        if lspitems[i]['kind'] == 3
+            let ud['snippet'] = substitute(lspitems[i]['textEdit']['newText'], '\(\${\d\+:\w\+\)\s[a-z|A-Z|\.]\+.\+}}', '\1}', 'g')
+            let ud['lspitem']['textEdit']['newText'] = ud['snippet']
+            let ud['is_snippet'] = 1
+        endif
+
         let items[i].user_data = ud
         let i += 1
     endwhile
@@ -130,4 +138,3 @@ endfunc
 func! s:on_resolve_result(result, data)
     let a:result.data = get(get(a:data, 'response', {}), 'result', {})
 endfunc
-
